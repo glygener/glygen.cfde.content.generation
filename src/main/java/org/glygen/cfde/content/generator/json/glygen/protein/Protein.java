@@ -1,4 +1,4 @@
-package org.glygen.cfde.content.generator.json.protein;
+package org.glygen.cfde.content.generator.json.glygen.protein;
 
 import java.util.ArrayList;
 import java.util.List;

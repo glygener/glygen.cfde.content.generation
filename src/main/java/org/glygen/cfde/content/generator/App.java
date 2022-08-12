@@ -7,8 +7,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -17,10 +15,10 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.glygen.cfde.content.generator.json.MarkDownEntry;
-import org.glygen.cfde.content.generator.json.glycan.Glycan;
+import org.glygen.cfde.content.generator.json.glygen.glycan.Glycan;
 import org.glygen.cfde.content.generator.util.FreemarkerUtil;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class App
@@ -38,7 +36,6 @@ public class App
         }
         // glycans
         Integer t_counter = 1;
-        List<MarkDownEntry> t_entries = new ArrayList<>();
         FileWriter t_errorLog = new FileWriter(
                 t_arguments.getOutputFolder() + File.separator + "markdown.error.log");
         FreemarkerUtil t_freemaker = new FreemarkerUtil("./data/templates/", t_errorLog);
@@ -50,7 +47,7 @@ public class App
             t_line = t_line.trim();
             if (t_line.length() > 0)
             {
-                System.out.println(t_counter++);
+                // System.out.println(t_counter++);
 
                 String[] t_ids = t_line.split(" ");
                 String t_glyTouCan = t_ids[0];
@@ -74,9 +71,7 @@ public class App
                         String t_json = Files.readString(t_filePath);
                         ObjectMapper t_mapper = new ObjectMapper();
                         Glycan t_glycanInfo = t_mapper.readValue(t_json, Glycan.class);
-                        MarkDownEntry t_entry = t_freemaker.buildMarkDownEntry(t_glycanInfo,
-                                t_glyTouCan, t_pubChem);
-                        t_entries.add(t_entry);
+                        t_freemaker.buildMarkDownEntry(t_glycanInfo, t_glyTouCan, t_pubChem);
                     }
                     catch (Exception e)
                     {
@@ -90,9 +85,23 @@ public class App
         t_glycanReader.close();
         // create the JSON string
         ObjectMapper t_mapper = new ObjectMapper();
+        t_mapper.setSerializationInclusion(Include.NON_NULL);
         t_mapper.writeValue(
-                new File(t_arguments.getOutputFolder() + File.separator + "compound.json"),
-                t_entries);
+                new File(t_arguments.getOutputFolder() + File.separator + "compound.md.json"),
+                t_freemaker.getMarkdownEntries());
+        t_mapper = new ObjectMapper();
+        t_mapper.setSerializationInclusion(Include.NON_NULL);
+        String t_json = t_mapper.writerWithDefaultPrettyPrinter()
+                .writeValueAsString(t_freemaker.getCompounds());
+        FileWriter t_writer = new FileWriter(
+                new File(t_arguments.getOutputFolder() + File.separator + "compound.data.json"));
+        t_writer.write(t_json);
+        t_writer.flush();
+        t_writer.close();
+        // t_mapper.writeValue(
+        // new File(t_arguments.getOutputFolder() + File.separator +
+        // "compound.data.json"),
+        // t_freemaker.getCompounds());
 
         t_errorLog.flush();
         t_errorLog.close();

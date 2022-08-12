@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import org.glygen.cfde.content.generator.json.glycan.Component;
+import org.glygen.cfde.content.generator.json.glygen.glycan.Component;
 
 public class GlycanCompositionUtil
 {
@@ -21,6 +21,7 @@ public class GlycanCompositionUtil
         this.m_validComponents.put("neuac", "NeuAc");
         this.m_validComponents.put("neugc", "NeuGc");
         this.m_validComponents.put("hexa", "HexA");
+        this.m_validComponents.put("pent", "Pen");
         this.m_validComponents.put("p", "P");
         this.m_validComponents.put("s", "S");
         this.m_validComponents.put("other", "Other");
@@ -46,6 +47,7 @@ public class GlycanCompositionUtil
         this.addResidueToString("neuac");
         this.addResidueToString("neugc");
         this.addResidueToString("hexa");
+        this.addResidueToString("pent");
         this.addResidueToString("p");
         this.addResidueToString("s");
         this.addResidueToString("other");

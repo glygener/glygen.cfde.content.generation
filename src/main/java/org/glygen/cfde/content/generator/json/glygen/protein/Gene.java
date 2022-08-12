@@ -1,13 +1,13 @@
-package org.glygen.cfde.content.generator.json.glycan;
+package org.glygen.cfde.content.generator.json.glygen.protein;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Species
+public class Gene
 {
     private String m_name = null;
-    private Integer m_taxId = null;
+    private Locus m_locus = null;
 
     @JsonProperty("name")
     public String getName()
@@ -20,14 +20,15 @@ public class Species
         this.m_name = a_name;
     }
 
-    @JsonProperty("taxid")
-    public Integer getTaxId()
+    @JsonProperty("locus")
+    public Locus getLocus()
     {
-        return this.m_taxId;
+        return this.m_locus;
     }
 
-    public void setTaxId(Integer a_taxId)
+    public void setLocus(Locus a_locus)
     {
-        this.m_taxId = a_taxId;
+        this.m_locus = a_locus;
     }
+
 }
