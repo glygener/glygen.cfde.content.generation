@@ -1,12 +1,6 @@
 package org.glygen.cfde.content.generator;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -15,11 +9,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.glygen.cfde.content.generator.json.glygen.glycan.Glycan;
-import org.glygen.cfde.content.generator.util.FreemarkerUtil;
-
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.glygen.cfde.content.generator.util.ContentGenerationUtil;
 
 public class App
 {
@@ -35,76 +25,15 @@ public class App
             return;
         }
         // glycans
-        Integer t_counter = 1;
-        FileWriter t_errorLog = new FileWriter(
-                t_arguments.getOutputFolder() + File.separator + "markdown.error.log");
-        FreemarkerUtil t_freemaker = new FreemarkerUtil("./data/templates/", t_errorLog);
-        BufferedReader t_glycanReader = new BufferedReader(
-                new FileReader(t_arguments.getGlycanFile()));
-        String t_line = t_glycanReader.readLine();
-        while (t_line != null)
-        {
-            t_line = t_line.trim();
-            if (t_line.length() > 0)
-            {
-                // System.out.println(t_counter++);
+        ContentGenerationUtil t_util = new ContentGenerationUtil(t_arguments.getOutputFolder());
 
-                String[] t_ids = t_line.split(" ");
-                String t_glyTouCan = t_ids[0];
-                String t_pubChem = null;
-                if (t_ids.length == 2)
-                {
-                    t_pubChem = t_ids[1];
-                }
-                String t_jsonFileName = t_arguments.getJsonFolder() + File.separator + "glycan"
-                        + File.separator + t_glyTouCan + ".json";
-                File t_jsonFile = new File(t_jsonFileName);
-                if (!t_jsonFile.exists())
-                {
-                    t_errorLog.write("Missing JSON file for Glycan: " + t_glyTouCan + "/n");
-                }
-                else
-                {
-                    try
-                    {
-                        Path t_filePath = Path.of(t_jsonFileName);
-                        String t_json = Files.readString(t_filePath);
-                        ObjectMapper t_mapper = new ObjectMapper();
-                        Glycan t_glycanInfo = t_mapper.readValue(t_json, Glycan.class);
-                        t_freemaker.buildMarkDownEntry(t_glycanInfo, t_glyTouCan, t_pubChem);
-                    }
-                    catch (Exception e)
-                    {
-                        t_errorLog.write("Unable generate markdown for " + t_glyTouCan + ": "
-                                + e.getMessage() + "/n");
-                    }
-                }
-            }
-            t_line = t_glycanReader.readLine();
-        }
-        t_glycanReader.close();
-        // create the JSON string
-        ObjectMapper t_mapper = new ObjectMapper();
-        t_mapper.setSerializationInclusion(Include.NON_NULL);
-        t_mapper.writeValue(
-                new File(t_arguments.getOutputFolder() + File.separator + "compound.md.json"),
-                t_freemaker.getMarkdownEntries());
-        t_mapper = new ObjectMapper();
-        t_mapper.setSerializationInclusion(Include.NON_NULL);
-        String t_json = t_mapper.writerWithDefaultPrettyPrinter()
-                .writeValueAsString(t_freemaker.getCompounds());
-        FileWriter t_writer = new FileWriter(
-                new File(t_arguments.getOutputFolder() + File.separator + "compound.data.json"));
-        t_writer.write(t_json);
-        t_writer.flush();
-        t_writer.close();
-        // t_mapper.writeValue(
-        // new File(t_arguments.getOutputFolder() + File.separator +
-        // "compound.data.json"),
-        // t_freemaker.getCompounds());
+        t_util.generateGlycanContent(t_arguments.getGlycanFile(), t_arguments.getJsonFolder(),
+                t_arguments.getOutputFolder());
 
-        t_errorLog.flush();
-        t_errorLog.close();
+        t_util.generateProteinContent(t_arguments.getProteinFile(), t_arguments.getJsonFolder(),
+                t_arguments.getOutputFolder());
+
+        t_util.writeErrorLog();
     }
 
     /**

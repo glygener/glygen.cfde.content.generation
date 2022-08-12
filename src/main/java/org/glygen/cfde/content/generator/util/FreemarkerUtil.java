@@ -13,9 +13,11 @@ import org.glygen.cfde.content.generator.json.MarkDownEntry;
 import org.glygen.cfde.content.generator.json.cfde.glycan.CFDEMotif;
 import org.glygen.cfde.content.generator.json.cfde.glycan.CFDESpecies;
 import org.glygen.cfde.content.generator.json.cfde.glycan.Compound;
+import org.glygen.cfde.content.generator.json.cfde.protein.CFDEProtein;
 import org.glygen.cfde.content.generator.json.glygen.glycan.Glycan;
 import org.glygen.cfde.content.generator.json.glygen.glycan.Motif;
 import org.glygen.cfde.content.generator.json.glygen.glycan.Species;
+import org.glygen.cfde.content.generator.json.glygen.protein.Protein;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -28,6 +30,7 @@ public class FreemarkerUtil
     private FileWriter m_errorLog = null;
     private List<MarkDownEntry> m_markdownEntries = new ArrayList<>();
     private List<Compound> m_compounds = new ArrayList<>();
+    private List<CFDEProtein> m_proteins = new ArrayList<>();
 
     public FreemarkerUtil(String a_templateFolder, FileWriter a_errorLog) throws IOException
     {
@@ -148,4 +151,21 @@ public class FreemarkerUtil
     {
         this.m_compounds = a_compounds;
     }
+
+    public List<CFDEProtein> getProteins()
+    {
+        return m_proteins;
+    }
+
+    public void setProteins(List<CFDEProtein> a_proteins)
+    {
+        this.m_proteins = a_proteins;
+    }
+
+    public void buildMarkDownEntry(Protein a_proteinInfo, String a_proteinId)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
 }
