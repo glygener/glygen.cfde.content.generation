@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -13,10 +15,16 @@ import org.glygen.cfde.content.generator.json.MarkDownEntry;
 import org.glygen.cfde.content.generator.json.cfde.glycan.CFDEMotif;
 import org.glygen.cfde.content.generator.json.cfde.glycan.CFDESpecies;
 import org.glygen.cfde.content.generator.json.cfde.glycan.Compound;
+import org.glygen.cfde.content.generator.json.cfde.protein.CFDEDisease;
 import org.glygen.cfde.content.generator.json.cfde.protein.CFDEProtein;
 import org.glygen.cfde.content.generator.json.glygen.glycan.Glycan;
 import org.glygen.cfde.content.generator.json.glygen.glycan.Motif;
 import org.glygen.cfde.content.generator.json.glygen.glycan.Species;
+import org.glygen.cfde.content.generator.json.glygen.protein.Disease;
+import org.glygen.cfde.content.generator.json.glygen.protein.Evidence;
+import org.glygen.cfde.content.generator.json.glygen.protein.Gene;
+import org.glygen.cfde.content.generator.json.glygen.protein.Glycosylation;
+import org.glygen.cfde.content.generator.json.glygen.protein.Locus;
 import org.glygen.cfde.content.generator.json.glygen.protein.Protein;
 
 import freemarker.template.Configuration;
@@ -90,7 +98,7 @@ public class FreemarkerUtil
                         + e.getMessage() + "\n");
             }
         }
-        if (a_glycanInfo.getMotifs() != null & a_glycanInfo.getMotifs().size() > 0)
+        if (a_glycanInfo.getMotifs() != null && a_glycanInfo.getMotifs().size() > 0)
         {
             t_mapping.put("motifs", a_glycanInfo.getMotifs());
             List<CFDEMotif> t_motifs = new ArrayList<>();
@@ -103,7 +111,7 @@ public class FreemarkerUtil
             }
             t_compound.setMotifs(t_motifs);
         }
-        if (a_glycanInfo.getSpecies() != null & a_glycanInfo.getSpecies().size() > 0)
+        if (a_glycanInfo.getSpecies() != null && a_glycanInfo.getSpecies().size() > 0)
         {
             t_mapping.put("organism", a_glycanInfo.getSpecies());
             List<CFDESpecies> t_species = new ArrayList<>();
@@ -154,7 +162,7 @@ public class FreemarkerUtil
 
     public List<CFDEProtein> getProteins()
     {
-        return m_proteins;
+        return this.m_proteins;
     }
 
     public void setProteins(List<CFDEProtein> a_proteins)
@@ -163,9 +171,168 @@ public class FreemarkerUtil
     }
 
     public void buildMarkDownEntry(Protein a_proteinInfo, String a_proteinId)
+            throws IOException, TemplateException
     {
-        // TODO Auto-generated method stub
-
+        CFDEProtein t_cfdeProtein = new CFDEProtein();
+        Map<String, Object> t_mapping = new HashMap<String, Object>();
+        t_mapping.put("uniprotAc", a_proteinId);
+        t_cfdeProtein.setUniprotAc(a_proteinId);
+        t_cfdeProtein.setLinkout("https://www.glygen.org/protein/" + a_proteinId);
+        if (a_proteinInfo.getRefSeq() != null)
+        {
+            String t_value = a_proteinInfo.getRefSeq().getRefSeqId();
+            if (t_value != null)
+            {
+                t_mapping.put("refseqId", t_value);
+                t_cfdeProtein.setRefseqId(t_value);
+            }
+            t_value = a_proteinInfo.getRefSeq().getReSeqName();
+            if (t_value != null)
+            {
+                t_mapping.put("refseqName", t_value);
+                t_cfdeProtein.setRefseqName(t_value);
+            }
+        }
+        if (a_proteinInfo.getGene() != null)
+        {
+            if (a_proteinInfo.getGene().size() > 1)
+            {
+                this.m_errorLog.write("Too many gene objects for " + a_proteinId + ": "
+                        + Integer.toString(a_proteinInfo.getGene().size()) + "\n");
+            }
+            for (Gene t_gene : a_proteinInfo.getGene())
+            {
+                if (t_gene.getName() != null)
+                {
+                    t_mapping.put("geneName", t_gene.getName());
+                    t_cfdeProtein.setGeneName(t_gene.getName());
+                }
+                if (t_gene.getLocus() != null)
+                {
+                    try
+                    {
+                        String t_result = "Chromosome: ";
+                        Locus t_locus = t_gene.getLocus();
+                        DecimalFormat t_decimalFormat = new DecimalFormat("#.##");
+                        t_decimalFormat.setGroupingUsed(true);
+                        t_decimalFormat.setGroupingSize(3);
+                        t_result = t_result + t_locus.getChromosome() + "("
+                                + t_decimalFormat.format(t_locus.getStartPos()) + " - "
+                                + t_decimalFormat.format(t_locus.getEndPos()) + ")";
+                        t_mapping.put("location", t_result);
+                        t_cfdeProtein.setGeneLocation(t_result);
+                    }
+                    catch (Exception e)
+                    {
+                        this.m_errorLog.write("Error creating location for " + a_proteinId + ": "
+                                + e.getMessage() + "\n");
+                    }
+                    if (t_gene.getLocus().getEvidence() != null)
+                    {
+                        try
+                        {
+                            for (Evidence t_evidence : t_gene.getLocus().getEvidence())
+                            {
+                                if (t_evidence.getDatabase().equals("Ensembl Gene"))
+                                {
+                                    t_mapping.put("geneId", t_evidence.getId());
+                                    t_cfdeProtein.setEnsemblId(t_evidence.getId());
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            this.m_errorLog.write("Error finding ensembl gene ID for " + a_proteinId
+                                    + ": " + e.getMessage() + "\n");
+                        }
+                    }
+                }
+            }
+        }
+        if (a_proteinInfo.getDiseases() != null && a_proteinInfo.getDiseases().size() > 0)
+        {
+            List<CFDEDisease> t_cfdeDiseases = new ArrayList<>();
+            for (Disease t_disease : a_proteinInfo.getDiseases())
+            {
+                CFDEDisease t_cfdeDisease = new CFDEDisease();
+                t_cfdeDisease.setId(t_disease.getId());
+                t_cfdeDisease.setName(t_disease.getName().getName());
+                t_cfdeDiseases.add(t_cfdeDisease);
+            }
+            t_mapping.put("disease", t_cfdeDiseases);
+            t_cfdeProtein.setDiseases(t_cfdeDiseases);
+        }
+        if (a_proteinInfo.getGlycosylation() != null && a_proteinInfo.getGlycosylation().size() > 0)
+        {
+            HashSet<String> t_sitesN = new HashSet<>();
+            HashSet<String> t_sitesO = new HashSet<>();
+            Integer t_annotationN = 0;
+            Integer t_annotationO = 0;
+            for (Glycosylation t_annotation : a_proteinInfo.getGlycosylation())
+            {
+                if (t_annotation.getType().equals("O-linked"))
+                {
+                    t_annotationO++;
+                    String t_position = "";
+                    if (t_annotation.getStartPos() != null)
+                    {
+                        t_position = t_position + t_annotation.getStartPos();
+                    }
+                    t_position = t_position + "-";
+                    if (t_annotation.getEndPos() != null)
+                    {
+                        t_position = t_position + t_annotation.getEndPos();
+                    }
+                    if (!t_sitesO.contains(t_position))
+                    {
+                        t_sitesO.add(t_position);
+                    }
+                }
+                else if (t_annotation.getType().equals("N-linked"))
+                {
+                    t_annotationN++;
+                    String t_position = "";
+                    if (t_annotation.getStartPos() != null)
+                    {
+                        t_position = t_position + t_annotation.getStartPos();
+                    }
+                    t_position = t_position + "-";
+                    if (t_annotation.getEndPos() != null)
+                    {
+                        t_position = t_position + t_annotation.getEndPos();
+                    }
+                    if (!t_sitesN.contains(t_position))
+                    {
+                        t_sitesN.add(t_position);
+                    }
+                }
+                else
+                {
+                    this.m_errorLog.write("Unknwon glycosylation type for " + a_proteinId + ": "
+                            + t_annotation.getType() + "\n");
+                }
+            }
+            Integer t_totalSite = t_sitesN.size() + t_sitesO.size();
+            String t_glycosylation = t_totalSite.toString() + " site(s) total, "
+                    + t_annotationN.toString() + " N-linked annotation(s) at "
+                    + Integer.toString(t_sitesN.size()) + " site(s), " + t_annotationO.toString()
+                    + " O-linked annotation(s) at " + Integer.toString(t_sitesO.size())
+                    + " site(s)";
+            t_mapping.put("glycoSummary", t_glycosylation);
+            t_cfdeProtein.setGlycosylation(t_glycosylation);
+        }
+        else
+        {
+            t_mapping.put("glycoSummary", "No glycosylation reported");
+            t_cfdeProtein.setGlycosylation("No glycosylation reported");
+        }
+        String t_result = this.render(t_mapping, "protein.template.ftlh");
+        t_result = t_result.replaceAll("\\r", "");
+        MarkDownEntry t_entry = new MarkDownEntry();
+        t_entry.setMarkdown(t_result);
+        t_entry.setId(a_proteinId);
+        this.m_markdownEntries.add(t_entry);
+        this.m_proteins.add(t_cfdeProtein);
     }
 
 }

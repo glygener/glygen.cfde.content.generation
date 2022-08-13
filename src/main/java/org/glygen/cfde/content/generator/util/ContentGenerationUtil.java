@@ -118,7 +118,8 @@ public class ContentGenerationUtil
                         String t_json = Files.readString(t_filePath);
                         ObjectMapper t_mapper = new ObjectMapper();
                         Protein t_proteinInfo = t_mapper.readValue(t_json, Protein.class);
-                        t_freemaker.buildMarkDownEntry(t_proteinInfo, t_proteinId);
+                        t_freemaker.buildMarkDownEntry(t_proteinInfo,
+                                t_proteinId.replace("-1", ""));
                     }
                     catch (Exception e)
                     {

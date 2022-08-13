@@ -27,8 +27,9 @@ public class App
         // glycans
         ContentGenerationUtil t_util = new ContentGenerationUtil(t_arguments.getOutputFolder());
 
-        t_util.generateGlycanContent(t_arguments.getGlycanFile(), t_arguments.getJsonFolder(),
-                t_arguments.getOutputFolder());
+        // t_util.generateGlycanContent(t_arguments.getGlycanFile(),
+        // t_arguments.getJsonFolder(),
+        // t_arguments.getOutputFolder());
 
         t_util.generateProteinContent(t_arguments.getProteinFile(), t_arguments.getJsonFolder(),
                 t_arguments.getOutputFolder());
