@@ -25,3 +25,5 @@ More information for glycan [G17689DH](https://www.glygen.org/glycan/G17689DH) i
 **Ensembl Gene ID**: ENSG00000019991  
 **Disease**: autosomal recessive nonsyndromic deafness 39(DOID:0110497)  
 **Glycosylation Summary**: 5 site(s) total, 55 N-linked annotation(s) at 4 site(s), 3 O-linked annotation(s) at 1 site(s)  
+
+More information for protein [P14210](https://www.glygen.org/protein/P14210) is available on GlyGen
