@@ -14,3 +14,14 @@ Program to generate GlyGen data widgets for the CFDE data pages
 **Organism**: Homo sapiens, Mus musculus, Rattus norvegicus  
 
 More information for glycan [G17689DH](https://www.glygen.org/glycan/G17689DH) is available on GlyGen
+
+## Protein Details
+
+**UniProtKB Accession**: [P14210](https://www.glygen.org/protein/P14210)  
+**RefSeq ID**: NP_000592  
+**RefSeq Name**: hepatocyte growth factor isoform 1 preproprotein  
+**Gene Name**: HGF  
+**Gene Location**: Chromosome: 7(81,770,438 - 81,699,008)  
+**Ensembl Gene ID**: ENSG00000019991  
+**Disease**: autosomal recessive nonsyndromic deafness 39(DOID:0110497)  
+**Glycosylation Summary**: 5 site(s) total, 55 N-linked annotation(s) at 4 site(s), 3 O-linked annotation(s) at 1 site(s)  
